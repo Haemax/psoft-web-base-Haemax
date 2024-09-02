@@ -1,41 +1,55 @@
 package com.ufcg.psoft.commerce.controller;
-import com.ufcg.psoft.commerce.dto.EntregadorGetDTO;
-import com.ufcg.psoft.commerce.dto.EntregadorPostPutDTO;
-import com.ufcg.psoft.commerce.service.entregador.EntregadorServiceImpl;
+
+import com.ufcg.psoft.commerce.dto.entregador.EntregadorGetRequestDTO;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import com.ufcg.psoft.commerce.dto.entregador.EntregadorPostPutRequestDTO;
+import com.ufcg.psoft.commerce.service.entregador.EntregadorService;
+
+import jakarta.validation.Valid;
+
+import java.util.List;
+
 @RestController
-@RequestMapping("/entregadores")
+@RequestMapping(value = "/entregadores",
+        produces = MediaType.APPLICATION_JSON_VALUE)
 public class EntregadorController {
 
     @Autowired
-    private EntregadorServiceImpl entregadorService;
+    private EntregadorService entregadorService;
 
-    @PostMapping
-    public ResponseEntity<EntregadorGetDTO> criarEntregador(@RequestBody EntregadorPostPutDTO entregadorCreateDTO) {
-        EntregadorGetDTO response = entregadorService.criarEntregador(entregadorCreateDTO);
-        return ResponseEntity.ok(response);
+    @GetMapping("/{id}")
+    public ResponseEntity<EntregadorGetRequestDTO> recuperarEntregador(@PathVariable Long id) {
+        return ResponseEntity.status(HttpStatus.OK).body(entregadorService.recuperar(id));
+    }
+
+    @GetMapping("")
+    public ResponseEntity<List<EntregadorGetRequestDTO>> listarEntregadores() {
+        return ResponseEntity.status(HttpStatus.OK).body(entregadorService.listar());
+    }
+
+    @PostMapping()
+    public ResponseEntity<?> criarEntregador(
+            @RequestBody @Valid EntregadorPostPutRequestDTO entregadorPostPutRequestDto) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(entregadorService.criar(entregadorPostPutRequestDto));
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<EntregadorGetDTO> editarEntregador(@PathVariable Long id, @RequestBody EntregadorPostPutDTO entregadorUpdateDTO) {
-        EntregadorGetDTO response = entregadorService.editarEntregador(id, entregadorUpdateDTO);
-        return ResponseEntity.ok(response);
-    }
-
-    @PutMapping("/{id}/aprovar")
-    public ResponseEntity<EntregadorGetDTO> aprovarEntregador(@PathVariable Long id, @RequestParam String codigoAcessoEstabelecimento) {
-        EntregadorGetDTO response = entregadorService.aprovarEntregador(id, codigoAcessoEstabelecimento);
-        return ResponseEntity.ok(response);
+    public ResponseEntity<?> atualizarEntregador(
+            @PathVariable Long id,
+            @RequestParam String codigoAcesso,
+            @RequestBody @Valid EntregadorPostPutRequestDTO entregadorPostPutRequestDto) {
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(entregadorService.alterar(id, codigoAcesso, entregadorPostPutRequestDto));
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> removerEntregador(@PathVariable Long id, @RequestParam String codigoAcessoEstabelecimento) {
-        entregadorService.removerEntregador(id, codigoAcessoEstabelecimento);
-        return ResponseEntity.noContent().build();
+    public ResponseEntity<?> excluirEntregador(@PathVariable Long id, @RequestParam String codigoAcesso) {
+        entregadorService.remover(id, codigoAcesso);
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 }
-
-

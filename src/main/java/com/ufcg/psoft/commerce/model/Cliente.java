@@ -8,11 +8,13 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+
 @Entity
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@Table(name = "Clientes")
 public class Cliente {
 
     @JsonProperty("id")
@@ -28,7 +30,7 @@ public class Cliente {
     @Column(nullable = false)
     private String endereco;
 
-    @JsonIgnore
+    @JsonProperty("codigoAcesso")
     @Column(nullable = false)
     private String codigoAcesso;
 }

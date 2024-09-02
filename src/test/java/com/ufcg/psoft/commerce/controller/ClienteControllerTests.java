@@ -1,13 +1,13 @@
 package com.ufcg.psoft.commerce.controller;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import com.ufcg.psoft.commerce.dto.ClientePostPutRequestDTO;
-import com.ufcg.psoft.commerce.dto.ClienteResponseDTO;
-import com.ufcg.psoft.commerce.exception.CustomErrorType;
-import com.ufcg.psoft.commerce.model.Cliente;
-import com.ufcg.psoft.commerce.repository.ClienteRepository;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
+import java.util.Arrays;
+import java.util.List;
+
 import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -15,20 +15,23 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
-import java.util.Arrays;
-import java.util.List;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import com.ufcg.psoft.commerce.dto.cliente.ClientePostPutRequestDTO;
+import com.ufcg.psoft.commerce.dto.cliente.ClienteGetRequestDTO;
+import com.ufcg.psoft.commerce.exception.CustomErrorType;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import com.ufcg.psoft.commerce.model.Cliente;
+import com.ufcg.psoft.commerce.repository.ClienteRepository;
+
 
 @SpringBootTest
 @AutoConfigureMockMvc
 @DisplayName("Testes do controlador de Clientes")
 public class ClienteControllerTests {
 
-    final String URI_CLIENTES = "/clientes";
+    final String URI_CLIENTES = "/cliente";
 
     @Autowired
     MockMvc driver;
@@ -52,6 +55,7 @@ public class ClienteControllerTests {
                 .codigoAcesso("123456")
                 .build()
         );
+
         clientePostPutRequestDTO = ClientePostPutRequestDTO.builder()
                 .nome(cliente.getNome())
                 .endereco(cliente.getEndereco())
@@ -157,7 +161,7 @@ public class ClienteControllerTests {
                     .andDo(print())
                     .andReturn().getResponse().getContentAsString();
 
-            ClienteResponseDTO resultado = objectMapper.readValue(responseJsonString, ClienteResponseDTO.ClienteResponseDTOBuilder.class).build();
+            ClienteGetRequestDTO resultado = objectMapper.readValue(responseJsonString, ClienteGetRequestDTO.ClienteGetRequestDTOBuilder.class).build();
 
             // Assert
             assertEquals("Endereco Alterado", resultado.getEndereco());
@@ -365,8 +369,7 @@ public class ClienteControllerTests {
                     .andDo(print())
                     .andReturn().getResponse().getContentAsString();
 
-            ClienteResponseDTO resultado = objectMapper.readValue(responseJsonString, new TypeReference<>() {});
-
+            ClienteGetRequestDTO resultado = objectMapper.readValue(responseJsonString, new TypeReference<>() {});
             // Assert
             assertAll(
                     () -> assertEquals(cliente.getId().longValue(), resultado.getId().longValue()),
@@ -551,5 +554,7 @@ public class ClienteControllerTests {
                     () -> assertEquals("Codigo de acesso invalido!", resultado.getMessage())
             );
         }
+
+
     }
 }

@@ -1,9 +1,12 @@
 package com.ufcg.psoft.commerce.repository;
 
-import com.ufcg.psoft.commerce.model.Entregador;
 import org.springframework.data.jpa.repository.JpaRepository;
 
-public interface EntregadorRepository extends JpaRepository<Entregador, Long> {
-    Entregador findById(String codigoAcesso);
-}
+import com.ufcg.psoft.commerce.model.Entregador;
 
+import java.util.List;
+
+public interface EntregadorRepository extends JpaRepository<Entregador, Long> {
+    List<Entregador> findByEstabelecimentoId(Long estabelecimentoId);
+
+}
