@@ -1,6 +1,8 @@
 package com.ufcg.psoft.commerce.controller;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.when;
+import static org.springframework.test.web.client.match.MockRestRequestMatchers.jsonPath;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -8,6 +10,10 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import java.util.Arrays;
 import java.util.List;
 
+import com.ufcg.psoft.commerce.dto.pedido.PedidoPostPutRequestDTO;
+import com.ufcg.psoft.commerce.model.MetodoPagamento;
+import com.ufcg.psoft.commerce.model.Pizza;
+import com.ufcg.psoft.commerce.service.pedido.PedidoService;
 import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -20,10 +26,12 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.ufcg.psoft.commerce.dto.cliente.ClientePostPutRequestDTO;
 import com.ufcg.psoft.commerce.dto.cliente.ClienteGetRequestDTO;
+import com.ufcg.psoft.commerce.dto.pedido.PedidoGetRequestDTO;
 import com.ufcg.psoft.commerce.exception.CustomErrorType;
 
 import com.ufcg.psoft.commerce.model.Cliente;
 import com.ufcg.psoft.commerce.repository.ClienteRepository;
+import org.springframework.test.web.servlet.ResultMatcher;
 
 
 @SpringBootTest
@@ -44,6 +52,8 @@ public class ClienteControllerTests {
     Cliente cliente;
 
     ClientePostPutRequestDTO clientePostPutRequestDTO;
+
+    PedidoService pedidoService;
 
     @BeforeEach
     void setup() {
@@ -555,6 +565,60 @@ public class ClienteControllerTests {
             );
         }
 
+
+        //testes de pedido
+        @Test
+        public void criarDeveRetornarCreated() throws Exception {
+            PedidoPostPutRequestDTO pedidoDTO = PedidoPostPutRequestDTO.builder()
+                    .idCliente(1568L)
+                    .idPizzas(List.of(1L, 2L))
+                    .enderecoEntrega("Rua dos bobos, 0")
+                    .metodoPagamento(MetodoPagamento.CARTAO_CREDITO)
+                    .codigoAcesso("123456")
+                    .build();
+
+            PedidoGetRequestDTO pedidoCriado = PedidoGetRequestDTO.builder()
+                    .id(1L)
+                    .cliente(new ClienteGetRequestDTO(new Cliente()))
+                    .pizzas(List.of(new Pizza(), new Pizza()))
+                    .enderecoEntrega("Rua Exemplo, 123")
+                    .valorTotal(50.0)
+                    .metodoPagamento(MetodoPagamento.CARTAO_CREDITO)
+                    .build();
+
+            when(pedidoService.criarPedido(pedidoDTO, "123456")).thenReturn(pedidoCriado);
+
+            driver.perform(post("/cliente/pedido")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .param("codigoAcesso", "123456")
+                            .content(objectMapper.writeValueAsString(pedidoDTO)))
+                    .andExpect(status().isCreated())
+                    .andExpect((ResultMatcher) jsonPath("$.id").value(pedidoCriado.getId()))
+                    .andExpect((ResultMatcher) jsonPath("$.valorTotal").value(pedidoCriado.getValorTotal()));
+        }
+
+        @Test
+        public void buscarPedidoDeveRetornarOk() throws Exception {
+            Long pedidoId = 1L;
+            String codigoAcesso = "123456";
+
+            PedidoGetRequestDTO pedido = PedidoGetRequestDTO.builder()
+                    .id(pedidoId)
+                    .cliente(new ClienteGetRequestDTO(new Cliente()))
+                    .pizzas(List.of(new Pizza(), new Pizza()))
+                    .enderecoEntrega("Rua Exemplo, 123")
+                    .valorTotal(50.0)
+                    .metodoPagamento(MetodoPagamento.CARTAO_CREDITO)
+                    .build();
+
+            when(pedidoService.recuperarPedido(pedidoId, codigoAcesso)).thenReturn(pedido);
+
+            driver.perform(get("/cliente/pedido/{idPedido}", pedidoId)
+                            .param("codigoAcesso", codigoAcesso))
+                    .andExpect(status().isOk())
+                    .andExpect((ResultMatcher) jsonPath("$.id").value(pedido.getId()))
+                    .andExpect((ResultMatcher) jsonPath("$.valorTotal").value(pedido.getValorTotal()));
+        }
 
     }
 }

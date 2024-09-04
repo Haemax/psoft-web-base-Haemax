@@ -134,7 +134,7 @@ public class EstabelecimentoController {
                 .body(sabores);
     }
 
-    @PostMapping("{id}/entregadores")
+    @PostMapping("{id}/associarEntregador")
     public ResponseEntity<EntregadorGetRequestDTO> associarEntregador(
             @PathVariable Long id,
             @RequestParam String codigoAcesso,

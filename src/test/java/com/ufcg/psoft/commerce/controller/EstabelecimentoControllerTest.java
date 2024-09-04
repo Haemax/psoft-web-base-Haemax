@@ -2,6 +2,8 @@ package com.ufcg.psoft.commerce.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import com.ufcg.psoft.commerce.dto.estabelecimento.EstabelecimentoPostPutRequestDTO;
+import com.ufcg.psoft.commerce.model.Estabelecimento;
 import com.ufcg.psoft.commerce.repository.EstabelecimentoRepository;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -52,7 +54,7 @@ public class EstabelecimentoControllerTest {
         @DisplayName("Quando criamos um estabelecimento com dados válidos")
         void quandoCriamosUmEstabelecimentoComDadosValidos() throws Exception {
 
-            EstabelecimentoRecordDTO dto = new EstabelecimentoRecordDTO("Estabelecimento.java Teste", "123456");
+            EstabelecimentoPostPutRequestDTO dto = new EstabelecimentoPostPutRequestDTO("Estabelecimento.java Teste", "123456");
 
             String jsonRequest = objectMapper.writeValueAsString(dto);
 
@@ -64,20 +66,20 @@ public class EstabelecimentoControllerTest {
                     .andDo(print());
 
             // Verificar se o estabelecimento foi realmente salvo
-            EstabelecimentoModel foundEstabelecimento = estabelecimentoRepository.findAll().stream()
+            Estabelecimento foundEstabelecimento = estabelecimentoRepository.findAll().stream()
                     .filter(e -> e.getNome().equals("Estabelecimento.java Teste"))
                     .findFirst()
                     .orElse(null);
 
             assertNotNull(foundEstabelecimento, "O estabelecimento não foi encontrado.");
             assertEquals("Estabelecimento.java Teste", foundEstabelecimento.getNome());
-            assertEquals("123456", foundEstabelecimento.getCodigoDeAcesso());
+            assertEquals("123456", foundEstabelecimento.getCodigoAcesso());
         }
 
         @Test
         @DisplayName("Quando tentamos criar um estabelecimento com código de acesso inválido")
         void quandoTentamosCriarUmEstabelecimentoComCodigoDeAcessoInvalido() throws Exception {
-            EstabelecimentoRecordDTO dto = new EstabelecimentoRecordDTO("Estabelecimento.java Teste", "12345");
+            EstabelecimentoPostPutRequestDTO dto = new EstabelecimentoPostPutRequestDTO("Estabelecimento.java Teste", "12345");
 
             String jsonRequest = objectMapper.writeValueAsString(dto);
 
@@ -92,13 +94,13 @@ public class EstabelecimentoControllerTest {
         @DisplayName("Quando atualizamos um estabelecimento existente com dados válidos")
         void quandoAtualizamosUmEstabelecimentoExistenteComDadosValidos() throws Exception {
             // Primeiro, cria um estabelecimento
-            EstabelecimentoModel estabelecimento = new EstabelecimentoModel();
+            Estabelecimento estabelecimento = new Estabelecimento();
             estabelecimento.setNome("Estabelecimento.java Antigo");
-            estabelecimento.setCodigoDeAcesso("codigoAntigo");
+            estabelecimento.setCodigoAcesso("codigoAntigo");
             estabelecimento = estabelecimentoRepository.save(estabelecimento);
 
             // Atualizar o estabelecimento
-            EstabelecimentoRecordDTO dto = new EstabelecimentoRecordDTO("Estabelecimento.java Atualizado", "654321");
+            EstabelecimentoPostPutRequestDTO dto = new EstabelecimentoPostPutRequestDTO("Estabelecimento.java Atualizado", "654321");
 
             String jsonRequest = objectMapper.writeValueAsString(dto);
 
@@ -109,10 +111,10 @@ public class EstabelecimentoControllerTest {
                     .andDo(print());
 
             // Verificar se o estabelecimento foi atualizado
-            EstabelecimentoModel updatedEstabelecimento = estabelecimentoRepository.findById(estabelecimento.getId()).orElse(null);
+            Estabelecimento updatedEstabelecimento = estabelecimentoRepository.findById(estabelecimento.getId()).orElse(null);
             assertNotNull(updatedEstabelecimento);
             assertEquals("Estabelecimento.java Atualizado", updatedEstabelecimento.getNome());
-            assertEquals("654321", updatedEstabelecimento.getCodigoDeAcesso());
+            assertEquals("654321", updatedEstabelecimento.getCodigoAcesso());
         }
 
         @Test
@@ -132,13 +134,13 @@ public class EstabelecimentoControllerTest {
         @DisplayName("Quando tentamos atualizar um estabelecimento com dados inválidos")
         void quandoTentamosAtualizarUmEstabelecimentoComDadosInvalidos() throws Exception {
             // Primeiro, cria um estabelecimento
-            EstabelecimentoModel estabelecimento = new EstabelecimentoModel();
+            Estabelecimento estabelecimento = new Estabelecimento();
             estabelecimento.setNome("Estabelecimento.java Original");
-            estabelecimento.setCodigoDeAcesso("codigoOriginal");
+            estabelecimento.setCodigoAcesso("codigoOriginal");
             estabelecimento = estabelecimentoRepository.save(estabelecimento);
 
             // Atualizar o estabelecimento com dados inválidos
-            EstabelecimentoRecordDTO dto = new EstabelecimentoRecordDTO("Estabelecimento.java Atualizado", "12345"); // Código de acesso inválido
+            EstabelecimentoPostPutRequestDTO dto = new EstabelecimentoPostPutRequestDTO("Estabelecimento.java Atualizado", "12345"); // Código de acesso inválido
 
             String jsonRequest = objectMapper.writeValueAsString(dto);
 
@@ -153,9 +155,9 @@ public class EstabelecimentoControllerTest {
         @DisplayName("Quando apagamos um estabelecimento existente")
         void quandoApagamosUmEstabelecimentoExistente() throws Exception {
             // Primeiro, cria um estabelecimento
-            EstabelecimentoModel estabelecimento = new EstabelecimentoModel();
+            Estabelecimento estabelecimento = new Estabelecimento();
             estabelecimento.setNome("Estabelecimento.java Para Deletar");
-            estabelecimento.setCodigoDeAcesso("codigoDeletar");
+            estabelecimento.setCodigoAcesso("codigoDeletar");
             estabelecimento = estabelecimentoRepository.save(estabelecimento);
 
             // Apagar o estabelecimento
@@ -165,7 +167,7 @@ public class EstabelecimentoControllerTest {
                     .andDo(print());
 
             // Verificar se o estabelecimento foi realmente apagado
-            EstabelecimentoModel deletedEstabelecimento = estabelecimentoRepository.findById(estabelecimento.getId()).orElse(null);
+            Estabelecimento deletedEstabelecimento = estabelecimentoRepository.findById(estabelecimento.getId()).orElse(null);
             assertNull(deletedEstabelecimento);
         }
 
@@ -186,7 +188,7 @@ public class EstabelecimentoControllerTest {
         @DisplayName("Quando tentamos atualizar um estabelecimento com um ID inexistente")
         void quandoTentamosAtualizarUmEstabelecimentoComIdInexistente() throws Exception {
             // Dados para atualizar
-            EstabelecimentoRecordDTO dto = new EstabelecimentoRecordDTO("Nome Atualizado", "654321");
+            EstabelecimentoPostPutRequestDTO dto = new EstabelecimentoPostPutRequestDTO("Nome Atualizado", "654321");
 
             String jsonRequest = objectMapper.writeValueAsString(dto);
 
@@ -205,7 +207,7 @@ public class EstabelecimentoControllerTest {
         @DisplayName("Quando tentamos criar um estabelecimento com campos obrigatórios faltando")
         void quandoTentamosCriarUmEstabelecimentoComCamposFaltando() throws Exception {
             // Dados inválidos (faltando nome)
-            EstabelecimentoRecordDTO dto = new EstabelecimentoRecordDTO(null, "123456");
+            EstabelecimentoPostPutRequestDTO dto = new EstabelecimentoPostPutRequestDTO(null, "123456");
 
             String jsonRequest = objectMapper.writeValueAsString(dto);
 

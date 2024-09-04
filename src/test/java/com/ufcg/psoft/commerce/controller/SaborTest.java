@@ -84,7 +84,7 @@ public class SaborTest {
             Sabor createdSabor = objectMapper.readValue(responseJsonString, Sabor.class);
             Sabor foundSabor = saborRepository.findById(createdSabor.getId()).orElse(null);
             assertNotNull(foundSabor);
-            assertEquals("Sabor Teste", foundSabor.getNomeDoSabor());
+            assertEquals("Sabor Teste", foundSabor.getNome());
             assertEquals("doce", foundSabor.getTipo());
             assertEquals(5.0, foundSabor.getValorMedia());
             assertEquals(7.5, foundSabor.getValorGrande());
@@ -142,8 +142,8 @@ public class SaborTest {
         @DisplayName("Quando tentamos atualizar um sabor com código de acesso inválido")
         void quandoTentamosAtualizarUmSaborComCodigoDeAcessoInvalido() throws Exception {
             Sabor sabor = new Sabor();
-            sabor.setNomeDoSabor("Sabor Original");
-            sabor.setTipo("doce");
+            sabor.setNome("Sabor Original");
+            sabor.setTipo(TIPO_SABOR.DOCE);
             sabor.setValorMedia(5.0);
             sabor.setValorGrande(7.5);
             sabor.setDisponivel(true);
@@ -165,21 +165,19 @@ public class SaborTest {
         @DisplayName("Quando listamos todos os sabores de um estabelecimento")
         void quandoListamosTodosOsSaboresDeUmEstabelecimento() throws Exception {
             Sabor sabor1 = new Sabor();
-            sabor1.setNomeDoSabor("Sabor 1");
-            sabor1.setTipo("doce");
+            sabor1.setNome("Sabor 1");
+            sabor1.setTipo(TIPO_SABOR.DOCE);
             sabor1.setValorMedia(5.0);
             sabor1.setValorGrande(7.5);
             sabor1.setDisponivel(true);
-            sabor1.setEstabelecimento(estabelecimento);
             saborRepository.save(sabor1);
 
             Sabor sabor2 = new Sabor();
-            sabor2.setNomeDoSabor("Sabor 2");
-            sabor2.setTipo("salgado");
+            sabor2.setNome("Sabor 2");
+            sabor2.setTipo(TIPO_SABOR.SALGADO);
             sabor2.setValorMedia(6.0);
             sabor2.setValorGrande(8.0);
             sabor2.setDisponivel(false);
-            sabor2.setEstabelecimento(estabelecimento);
             saborRepository.save(sabor2);
 
             String responseJsonString = mockMvc.perform(get(URI_SABORES, estabelecimento.getId())
@@ -190,29 +188,25 @@ public class SaborTest {
 
             Sabor[] sabores = objectMapper.readValue(responseJsonString, Sabor[].class);
             assertEquals(2, sabores.length);
-            // Verifique o conteúdo dos sabores se necessário
         }
 
         @Test
         @DisplayName("Quando listamos sabores por tipo")
         void quandoListamosSaboresPorTipo() throws Exception {
-            // Criação de sabores
             Sabor sabor1 = new Sabor();
-            sabor1.setNomeDoSabor("Sabor Doce");
-            sabor1.setTipo("doce");
+            sabor1.setNome("Sabor Doce");
+            sabor1.setTipo(TIPO_SABOR.DOCE);
             sabor1.setValorMedia(5.0);
             sabor1.setValorGrande(7.5);
             sabor1.setDisponivel(true);
-            sabor1.setEstabelecimento(estabelecimento);
             saborRepository.save(sabor1);
 
             Sabor sabor2 = new Sabor();
-            sabor2.setNomeDoSabor("Sabor Salgado");
-            sabor2.setTipo("salgado");
+            sabor2.setNome("Sabor Salgado");
+            sabor2.setTipo(TIPO_SABOR.SALGADO);
             sabor2.setValorMedia(6.0);
             sabor2.setValorGrande(8.0);
             sabor2.setDisponivel(false);
-            sabor2.setEstabelecimento(estabelecimento);
             saborRepository.save(sabor2);
 
             String responseJsonString = mockMvc.perform(get(URI_SABORES_TIPO, estabelecimento.getId())
@@ -224,14 +218,14 @@ public class SaborTest {
 
             Sabor[] sabores = objectMapper.readValue(responseJsonString, Sabor[].class);
             assertEquals(1, sabores.length);
-            assertEquals("Sabor Doce", sabores[0].getNomeDoSabor());
+            assertEquals("Sabor Doce", sabores[0].getNome());
         }
 
 
         @Test
         @DisplayName("Quando tentamos criar um sabor com dados inválidos")
         void quandoTentamosCriarUmSaborComDadosInvalidos() throws Exception {
-            // Dados inválidos (por exemplo, nome do sabor vazio)
+
             SaborPostPutRequestDTO dto = new SaborPostPutRequestDTO("", TIPO_SABOR.DOCE, -5.0, 7.5, true);
 
             String jsonRequest = objectMapper.writeValueAsString(dto);

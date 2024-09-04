@@ -3,9 +3,12 @@ package com.ufcg.psoft.commerce.controller;
 import com.ufcg.psoft.commerce.dto.cliente.ClientePostPutRequestDTO;
 
 import com.ufcg.psoft.commerce.dto.cliente.ClienteGetRequestDTO;
-import com.ufcg.psoft.commerce.model.Sabor;
+import com.ufcg.psoft.commerce.dto.pedido.PedidoGetRequestDTO;
+import com.ufcg.psoft.commerce.dto.pedido.PedidoPostPutRequestDTO;
+import com.ufcg.psoft.commerce.model.Pedido;
 import com.ufcg.psoft.commerce.model.TIPO_SABOR;
 import com.ufcg.psoft.commerce.service.cliente.ClienteService;
+import com.ufcg.psoft.commerce.service.pedido.PedidoService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -24,6 +27,9 @@ public class ClienteController {
 
     @Autowired
     private ClienteService clienteService;
+
+    @Autowired
+    private PedidoService pedidoService;
 
     @PostMapping()
     public ResponseEntity<ClienteGetRequestDTO> criarCliente(
@@ -72,7 +78,7 @@ public class ClienteController {
                 .body(clientes);
     }
 
-    @GetMapping("/estabelecimentos/{idEstabelecimento}/cardapio/")
+    @GetMapping("/estabelecimentos/{idEstabelecimento}/cardapio")
     public ResponseEntity<String> exibirCardapio(@RequestParam Long idEstabelecimento) {
         String ret = clienteService.exibirCardapio(idEstabelecimento);
         return ResponseEntity
@@ -87,5 +93,37 @@ public class ClienteController {
         return ResponseEntity
                 .status(HttpStatus.OK)
                 .body(ret);
+    }
+
+    //endpoints us8
+    @PostMapping("/pedido")
+    public ResponseEntity<PedidoGetRequestDTO> criarPedido(@Valid @RequestBody PedidoPostPutRequestDTO pedido,
+                                                           @RequestParam("codigoAcesso") String codigoAcesso) {
+        PedidoGetRequestDTO novoPedido = pedidoService.criarPedido(pedido, codigoAcesso);
+        return ResponseEntity
+                .status(HttpStatus.CREATED)
+                .body(novoPedido);
+    }
+
+    @GetMapping("/pedido/{idPedido}")
+    public ResponseEntity<PedidoGetRequestDTO> buscarPedidoPorId(@PathVariable Long idPedido,
+                                               @RequestParam("codigoAcesso") String codigoAcesso) {
+        PedidoGetRequestDTO pedido = pedidoService.recuperarPedido(idPedido, codigoAcesso);
+        return ResponseEntity.ok(pedido);
+    }
+
+    @PutMapping("/pedido/{idPedido}")
+    public ResponseEntity<PedidoGetRequestDTO> atualizarPedido(@PathVariable Long idPedido,
+                                             @Valid @RequestBody PedidoPostPutRequestDTO pedidoAtualizado,
+                                             @RequestParam("codigoAcesso") String codigoAcesso) {
+        PedidoGetRequestDTO pedido = pedidoService.alterarPedido(idPedido, pedidoAtualizado, codigoAcesso);
+        return ResponseEntity.ok(pedido);
+    }
+
+    @DeleteMapping("/pedido/{idPedido}")
+    public ResponseEntity<Void> removerPedido(@PathVariable Long idPedido,
+                                           @RequestParam("codigoAcesso") String codigoAcesso) {
+        pedidoService.removerPedido(idPedido, codigoAcesso);
+        return ResponseEntity.noContent().build();
     }
 }

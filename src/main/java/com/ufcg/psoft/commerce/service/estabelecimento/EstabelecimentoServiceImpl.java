@@ -11,11 +11,11 @@ import com.ufcg.psoft.commerce.exception.EntregadorNaoExisteException;
 import com.ufcg.psoft.commerce.exception.EstabelecimentoNaoExisteException;
 import com.ufcg.psoft.commerce.model.Entregador;
 import com.ufcg.psoft.commerce.model.Estabelecimento;
-import com.ufcg.psoft.commerce.model.Sabor;
 import com.ufcg.psoft.commerce.model.TIPO_SABOR;
 import com.ufcg.psoft.commerce.repository.EntregadorRepository;
 import com.ufcg.psoft.commerce.repository.EstabelecimentoRepository;
 import com.ufcg.psoft.commerce.service.entregador.EntregadorService;
+import com.ufcg.psoft.commerce.service.sabor.SaborServiceImpl;
 import com.ufcg.psoft.commerce.service.util.CredenciaisService;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,9 +23,8 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.stream.Collectors;
-
 @Service
-public class EstabelecimentoServiceImpl implements EstabelecimentoService{
+public class EstabelecimentoServiceImpl implements EstabelecimentoService {
 
     @Autowired
     private EstabelecimentoRepository estabelecimentoRepository;
@@ -37,10 +36,13 @@ public class EstabelecimentoServiceImpl implements EstabelecimentoService{
     private EntregadorService entregadorService;
 
     @Autowired
-    ModelMapper modelMapper;
+    private SaborServiceImpl saborServiceImpl;
+
+    @Autowired
+    private ModelMapper modelMapper;
+
     @Autowired
     private EntregadorRepository entregadorRepository;
-
 
     public EstabelecimentoGetRequestDTO criar(EstabelecimentoPostPutRequestDTO dto) {
         Estabelecimento estabelecimento = modelMapper.map(dto, Estabelecimento.class);
@@ -49,18 +51,17 @@ public class EstabelecimentoServiceImpl implements EstabelecimentoService{
     }
 
     @Override
-    public EstabelecimentoGetRequestDTO alterar(Long id, String codigoAcesso,
-                                                EstabelecimentoPostPutRequestDTO dto) {
-       Estabelecimento estabelecimento = estabelecimentoRepository.findById(id)
-               .orElseThrow(EstabelecimentoNaoExisteException::new);
+    public EstabelecimentoGetRequestDTO alterar(Long id, String codigoAcesso, EstabelecimentoPostPutRequestDTO dto) {
+        Estabelecimento estabelecimento = estabelecimentoRepository.findById(id)
+                .orElseThrow(EstabelecimentoNaoExisteException::new);
 
-       if(!credenciaisService.validaCodigoAcesso(codigoAcesso, estabelecimento.getCodigoAcesso())){
-           throw new CodigoDeAcessoInvalidoException();
-       }
+        if (!credenciaisService.validaCodigoAcesso(codigoAcesso, estabelecimento.getCodigoAcesso())) {
+            throw new CodigoDeAcessoInvalidoException();
+        }
 
-       modelMapper.map(dto, estabelecimento);
-       estabelecimentoRepository.save(estabelecimento);
-       return modelMapper.map(estabelecimento, EstabelecimentoGetRequestDTO.class);
+        modelMapper.map(dto, estabelecimento);
+        estabelecimentoRepository.save(estabelecimento);
+        return modelMapper.map(estabelecimento, EstabelecimentoGetRequestDTO.class);
     }
 
     @Override
@@ -83,28 +84,22 @@ public class EstabelecimentoServiceImpl implements EstabelecimentoService{
         Estabelecimento estabelecimento = estabelecimentoRepository.findById(id)
                 .orElseThrow(EstabelecimentoNaoExisteException::new);
 
-        if(!credenciaisService.validaCodigoAcesso(codigoAcesso, estabelecimento.getCodigoAcesso())){
+        if (!credenciaisService.validaCodigoAcesso(codigoAcesso, estabelecimento.getCodigoAcesso())) {
             throw new CodigoDeAcessoInvalidoException();
         }
         estabelecimentoRepository.delete(estabelecimento);
     }
 
+    // CRUD Sabores
 
-    //CRUD Sabores
     @Override
     public SaborGetRequestDTO criarSabor(Long id, String codigoAcesso, SaborPostPutRequestDTO dto) {
         Estabelecimento estabelecimento = estabelecimentoRepository.findById(id)
                 .orElseThrow(EstabelecimentoNaoExisteException::new);
 
-        Sabor sabor = modelMapper.map(dto, Sabor.class);
-
         credenciaisService.validaCodigoAcesso(estabelecimento.getCodigoAcesso(), codigoAcesso);
 
-        estabelecimento.addSabor(sabor);
-
-        estabelecimentoRepository.save(estabelecimento);
-
-        return modelMapper.map(sabor, SaborGetRequestDTO.class);
+        return saborServiceImpl.criarSabor(estabelecimento, dto);
     }
 
     @Override
@@ -112,9 +107,7 @@ public class EstabelecimentoServiceImpl implements EstabelecimentoService{
         Estabelecimento estabelecimento = estabelecimentoRepository.findById(id)
                 .orElseThrow(EstabelecimentoNaoExisteException::new);
 
-        return estabelecimento.getSabores().stream()
-                .filter(Sabor::isDisponivel).map(SaborGetRequestDTO::new)
-                .collect(Collectors.toList());
+        return saborServiceImpl.listarSabores(estabelecimento);
     }
 
     @Override
@@ -122,9 +115,7 @@ public class EstabelecimentoServiceImpl implements EstabelecimentoService{
         Estabelecimento estabelecimento = estabelecimentoRepository.findById(id)
                 .orElseThrow(EstabelecimentoNaoExisteException::new);
 
-        return estabelecimento.getSabores().stream()
-                .filter(sabor -> sabor.getTipo().equals(tipo) ).map(SaborGetRequestDTO::new)
-                .collect(Collectors.toList());
+        return saborServiceImpl.listarSaboresPorTipo(estabelecimento, tipo);
     }
 
     @Override
@@ -132,17 +123,9 @@ public class EstabelecimentoServiceImpl implements EstabelecimentoService{
         Estabelecimento estabelecimento = estabelecimentoRepository.findById(id)
                 .orElseThrow(EstabelecimentoNaoExisteException::new);
 
-        Sabor sabor = estabelecimento.getSabor(idSabor); //lança SaborNaoExisteException se o sabor não existir no estabelecimento
-
         credenciaisService.validaCodigoAcesso(estabelecimento.getCodigoAcesso(), codigoAcesso);
 
-        Sabor saborAtualizado = modelMapper.map(dto, Sabor.class);
-
-        estabelecimento.updateSabor(sabor.getId(), saborAtualizado);
-
-        estabelecimentoRepository.save(estabelecimento);
-
-        return modelMapper.map(saborAtualizado, SaborGetRequestDTO.class);
+        return saborServiceImpl.alterarSabor(estabelecimento, idSabor, dto);
     }
 
     @Override
@@ -152,8 +135,7 @@ public class EstabelecimentoServiceImpl implements EstabelecimentoService{
 
         credenciaisService.validaCodigoAcesso(estabelecimento.getCodigoAcesso(), codigoAcesso);
 
-        estabelecimento.removeSabor(idSabor);
-
+        saborServiceImpl.removerSabor(estabelecimento, idSabor);
         estabelecimentoRepository.save(estabelecimento);
     }
 
@@ -166,10 +148,8 @@ public class EstabelecimentoServiceImpl implements EstabelecimentoService{
                 .orElseThrow(EntregadorNaoExisteException::new);
 
         estabelecimento.addEntregador(entregador);
-
         estabelecimentoRepository.save(estabelecimento);
 
         return modelMapper.map(entregador, EntregadorGetRequestDTO.class);
     }
-
 }

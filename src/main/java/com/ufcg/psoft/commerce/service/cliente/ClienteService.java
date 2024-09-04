@@ -2,6 +2,7 @@ package com.ufcg.psoft.commerce.service.cliente;
 
 import com.ufcg.psoft.commerce.dto.cliente.ClientePostPutRequestDTO;
 import com.ufcg.psoft.commerce.dto.cliente.ClienteGetRequestDTO;
+import com.ufcg.psoft.commerce.model.Cliente;
 import com.ufcg.psoft.commerce.model.TIPO_SABOR;
 
 
@@ -18,6 +19,8 @@ public interface ClienteService {
     ClienteGetRequestDTO criar(ClientePostPutRequestDTO clientePostPutRequestDTO);
 
     void remover(Long id, String codigoAcesso);
+
+    Cliente recuperarObj(Long id);
 
     String exibirCardapio(Long idEstabelecimento);
 

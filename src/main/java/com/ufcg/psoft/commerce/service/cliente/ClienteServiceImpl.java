@@ -5,7 +5,6 @@ import com.ufcg.psoft.commerce.dto.sabor.SaborGetRequestDTO;
 import com.ufcg.psoft.commerce.exception.ClienteNaoExisteException;
 import com.ufcg.psoft.commerce.exception.CodigoDeAcessoInvalidoException;
 import com.ufcg.psoft.commerce.model.Cliente;
-import com.ufcg.psoft.commerce.model.Sabor;
 import com.ufcg.psoft.commerce.model.TIPO_SABOR;
 import com.ufcg.psoft.commerce.repository.ClienteRepository;
 import com.ufcg.psoft.commerce.dto.cliente.ClientePostPutRequestDTO;
@@ -80,6 +79,12 @@ public class ClienteServiceImpl implements ClienteService {
         Cliente cliente = clienteRepository.findById(id)
                 .orElseThrow(ClienteNaoExisteException::new);
         return new ClienteGetRequestDTO(cliente);
+    }
+
+    @Override
+    public Cliente recuperarObj(Long id) {
+        return clienteRepository.findById(id)
+                .orElseThrow(ClienteNaoExisteException::new);
     }
 
     //exibição de cardapio
