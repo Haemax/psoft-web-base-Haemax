@@ -1,20 +1,28 @@
 package com.ufcg.psoft.commerce.service.cliente;
 
-import com.ufcg.psoft.commerce.dto.ClientePostPutRequestDTO;
-import com.ufcg.psoft.commerce.dto.ClienteResponseDTO;
+import com.ufcg.psoft.commerce.dto.cliente.ClientePostPutRequestDTO;
+import com.ufcg.psoft.commerce.dto.cliente.ClienteGetRequestDTO;
+import com.ufcg.psoft.commerce.model.Cliente;
+import com.ufcg.psoft.commerce.model.TIPO_SABOR;
+
 
 import java.util.List;
 
 public interface ClienteService {
 
-    ClienteResponseDTO alterar(Long id, String codigoAcesso, ClientePostPutRequestDTO clientePostPutRequestDTO);
+    ClienteGetRequestDTO alterar(Long id, String codigoAcesso, ClientePostPutRequestDTO clientePostPutRequestDTO);
 
-    List<ClienteResponseDTO> listar();
+    List<ClienteGetRequestDTO> listar();
 
-    ClienteResponseDTO recuperar(Long id);
+    ClienteGetRequestDTO recuperar(Long id);
 
-    ClienteResponseDTO criar(ClientePostPutRequestDTO clientePostPutRequestDTO);
+    ClienteGetRequestDTO criar(ClientePostPutRequestDTO clientePostPutRequestDTO);
 
     void remover(Long id, String codigoAcesso);
 
+    Cliente recuperarObj(Long id);
+
+    String exibirCardapio(Long idEstabelecimento);
+
+    String exibirCardapioPorTipo(Long idEstabelecimento, TIPO_SABOR tipo);
 }

@@ -1,10 +1,20 @@
 package com.ufcg.psoft.commerce.service.entregador;
 
-import com.ufcg.psoft.commerce.model.Entregador;
+import java.util.List;
+
+import com.ufcg.psoft.commerce.dto.entregador.EntregadorGetRequestDTO;
+import com.ufcg.psoft.commerce.dto.entregador.EntregadorPostPutRequestDTO;
 
 public interface EntregadorService {
-    public Entregador criarEntregador(Entregador entregador);
-    public Entregador editarEntregador(Long id, String codigoAcesso, Entregador entregadorEditado);
-    public void removerEntregador(Long id, String codigoAcessoEstabelecimento);
-    public Entregador aprovarEntregador(Long id, String codigoAcessoEstabelecimento);
+
+    EntregadorGetRequestDTO criar(EntregadorPostPutRequestDTO entregadorPostPutRequestDTO);
+
+    EntregadorGetRequestDTO recuperar(Long id);
+
+    List<EntregadorGetRequestDTO> listar();
+
+    EntregadorGetRequestDTO alterar(Long id, String codigoAcesso,
+            EntregadorPostPutRequestDTO entregadorPostPutRequestDTO);
+
+    void remover(Long id, String codigoAcesso);
 }

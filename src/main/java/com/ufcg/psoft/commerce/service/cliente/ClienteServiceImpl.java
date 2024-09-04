@@ -1,11 +1,17 @@
 package com.ufcg.psoft.commerce.service.cliente;
 
+
+import com.ufcg.psoft.commerce.dto.sabor.SaborGetRequestDTO;
 import com.ufcg.psoft.commerce.exception.ClienteNaoExisteException;
 import com.ufcg.psoft.commerce.exception.CodigoDeAcessoInvalidoException;
-import com.ufcg.psoft.commerce.repository.ClienteRepository;
-import com.ufcg.psoft.commerce.dto.ClientePostPutRequestDTO;
-import com.ufcg.psoft.commerce.dto.ClienteResponseDTO;
 import com.ufcg.psoft.commerce.model.Cliente;
+import com.ufcg.psoft.commerce.model.TIPO_SABOR;
+import com.ufcg.psoft.commerce.repository.ClienteRepository;
+import com.ufcg.psoft.commerce.dto.cliente.ClientePostPutRequestDTO;
+import com.ufcg.psoft.commerce.dto.cliente.ClienteGetRequestDTO;
+
+import com.ufcg.psoft.commerce.service.estabelecimento.EstabelecimentoService;
+import com.ufcg.psoft.commerce.service.util.CredenciaisService;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -18,47 +24,102 @@ public class ClienteServiceImpl implements ClienteService {
 
     @Autowired
     ClienteRepository clienteRepository;
+
+    @Autowired
+    EstabelecimentoService estabelecimentoService;
+
+    @Autowired
+    private CredenciaisService credenciaisService;
+
     @Autowired
     ModelMapper modelMapper;
 
+
     @Override
-    public ClienteResponseDTO alterar(Long id, String codigoAcesso, ClientePostPutRequestDTO clientePostPutRequestDTO) {
+    public ClienteGetRequestDTO alterar(Long id, String codigoAcesso, ClientePostPutRequestDTO clientePostPutRequestDTO) {
         Cliente cliente = clienteRepository.findById(id).orElseThrow(ClienteNaoExisteException::new);
-        if (!cliente.getCodigoAcesso().equals(codigoAcesso)) {
+
+        if(!credenciaisService.validaCodigoAcesso(codigoAcesso, cliente.getCodigoAcesso())){
             throw new CodigoDeAcessoInvalidoException();
         }
+
         modelMapper.map(clientePostPutRequestDTO, cliente);
         clienteRepository.save(cliente);
-        return modelMapper.map(cliente, ClienteResponseDTO.class);
+        return modelMapper.map(cliente, ClienteGetRequestDTO.class);
     }
 
     @Override
-    public ClienteResponseDTO criar(ClientePostPutRequestDTO clientePostPutRequestDTO) {
+    public ClienteGetRequestDTO criar(ClientePostPutRequestDTO clientePostPutRequestDTO) {
         Cliente cliente = modelMapper.map(clientePostPutRequestDTO, Cliente.class);
         clienteRepository.save(cliente);
-        return modelMapper.map(cliente, ClienteResponseDTO.class);
+        return modelMapper.map(cliente, ClienteGetRequestDTO.class);
     }
 
     @Override
     public void remover(Long id, String codigoAcesso) {
         Cliente cliente = clienteRepository.findById(id).orElseThrow(ClienteNaoExisteException::new);
-        if (!cliente.getCodigoAcesso().equals(codigoAcesso)) {
+
+        if(!credenciaisService.validaCodigoAcesso(codigoAcesso, cliente.getCodigoAcesso())){
             throw new CodigoDeAcessoInvalidoException();
         }
+
         clienteRepository.delete(cliente);
     }
 
     @Override
-    public List<ClienteResponseDTO> listar() {
+    public List<ClienteGetRequestDTO> listar() {
         List<Cliente> clientes = clienteRepository.findAll();
         return clientes.stream()
-                .map(ClienteResponseDTO::new)
+                .map(ClienteGetRequestDTO::new)
                 .collect(Collectors.toList());
     }
 
     @Override
-    public ClienteResponseDTO recuperar(Long id) {
-        Cliente cliente = clienteRepository.findById(id).orElseThrow(ClienteNaoExisteException::new);
-        return new ClienteResponseDTO(cliente);
+    public ClienteGetRequestDTO recuperar(Long id) {
+        Cliente cliente = clienteRepository.findById(id)
+                .orElseThrow(ClienteNaoExisteException::new);
+        return new ClienteGetRequestDTO(cliente);
+    }
+
+    @Override
+    public Cliente recuperarObj(Long id) {
+        return clienteRepository.findById(id)
+                .orElseThrow(ClienteNaoExisteException::new);
+    }
+
+    //exibição de cardapio
+    @Override
+    public String exibirCardapio(Long idEstabelecimento) {
+        List<SaborGetRequestDTO> sabores = estabelecimentoService.listarSabores(idEstabelecimento);
+
+        StringBuilder ret = new StringBuilder();
+
+        for(SaborGetRequestDTO sabor : sabores){
+            ret.append(sabor.getNome()).append(", valor média: ")
+                    .append(sabor.getValor_m())
+                    .append(" valor grande: ")
+                    .append(sabor.getValor_g())
+                    .append("\n");
+        }
+
+        return ret.toString();
+    }
+
+    @Override
+    public String exibirCardapioPorTipo(Long idEstabelecimento, TIPO_SABOR tipo) {
+        List<SaborGetRequestDTO> sabores = estabelecimentoService.listarSaboresPorTipo(idEstabelecimento, tipo);
+
+        StringBuilder ret = new StringBuilder();
+
+        for(SaborGetRequestDTO sabor : sabores){
+            ret.append(sabor.getNome()).append(", valor média: ")
+                    .append(sabor.getValor_m())
+                    .append(" valor grande: ")
+                    .append(sabor.getValor_g())
+                    .append("\n");
+        }
+
+        return ret.toString();
     }
 }
+
